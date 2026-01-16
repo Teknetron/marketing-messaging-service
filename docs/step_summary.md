@@ -67,3 +67,16 @@ Event "0..1" <-- SendRequest : event_id
 Event "0..1" <-- Suppression : event_id
 
 @enduml
+```
+
+
+# Step Summary — Step 2 (Alembic Migrations)
+
+## What was done
+- Wired Alembic to SQLAlchemy metadata (`Base.metadata`) so Alembic understands our schema.
+- Loaded DATABASE_URL from `.env` in Alembic runtime.
+- Added initial migration `create_initial_tables` creating all required tables and indexes.
+- Implemented a clean downgrade reversing table creation order.
+
+
+

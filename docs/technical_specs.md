@@ -33,3 +33,39 @@ Enforced by `unique=True` on `event_id` in both tables.
 - `Event` 1..1 `EventProperties` (optional, cascade delete-orphan)
 - `Event` 1..1 `UserTraits` (optional, cascade delete-orphan)
 - `SendRequest.event_id` and `Suppression.event_id` are optional links back to `events` for audit traceability.
+
+
+# Technical Specs — Step 2 (Alembic Migrations)
+
+## Goal
+Introduce schema migrations using Alembic and create the initial database schema for:
+- events
+- event_properties
+- user_traits
+- send_requests
+- suppressions
+
+## Configuration approach
+- Alembic reads DATABASE_URL from environment (loaded via .env).
+- `alembic/env.py` calls `load_dotenv()` and uses DATABASE_URL if set, otherwise defaults to `sqlite:///./messaging.db`.
+- `target_metadata` is set to `Base.metadata` from `src.marketing_messaging_service.infrastructure.database`.
+
+## Why env.py overrides sqlalchemy.url
+We avoid hardcoding DB URLs in `alembic.ini` so the same project works across:
+- local dev
+- CI
+- different environments via env vars
+
+## Server defaults in SQLite
+We use `CURRENT_TIMESTAMP` for:
+- events.created_at
+- send_requests.decided_at
+- suppressions.decided_at
+
+This matches the ORM intention of “created/decided time is set by DB” while keeping SQLite-compatible defaults.
+
+## How to run
+- Create migration (optional stub):
+  - `alembic revision -m "create initial tables"`
+- Apply migrations:
+  - `alembic upgrade head`
