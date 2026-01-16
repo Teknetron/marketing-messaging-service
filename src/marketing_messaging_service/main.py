@@ -6,6 +6,7 @@ app = FastAPI(title="Marketing Messaging Service")
 
 # routers will be added later
 
+
 @app.get("/health")
 def health_check():
     return {"status": "ok"}
