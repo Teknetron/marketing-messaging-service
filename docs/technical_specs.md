@@ -126,3 +126,36 @@ Controllers remain thin and follow a synchronous, layered approach:
 - EventPropertiesIn and UserTraitsIn represent optional nested objects
 - AuditResponse schema matches the required audit output structure
 
+
+# Technical Specs — Step 5.1 (EventProcessingService)
+
+## Scope
+This step introduces the first service in the Service Layer:
+- EventProcessingService
+
+Only event persistence is implemented in this step.
+No rule evaluation, deduplication, suppression logic, or outbound send generation is included yet.
+
+## Inputs
+- `EventIn` (validated by controller via Pydantic)
+
+## Responsibilities
+EventProcessingService.process_event():
+1. Create `Event` from payload:
+   - user_id
+   - event_type
+   - event_timestamp
+   - properties (dynamic JSON object stored on Event model)
+2. Persist Event using `IEventRepository.add()`
+3. Persist optional `UserTraits` (1:1) linked by event_id
+
+## Transaction boundaries
+- Repositories do not commit/rollback.
+- DB session transaction lifecycle is controlled by request scope (controller dependency).
+
+## Output
+- Returns the persisted `Event` instance (primarily for internal chaining in future steps).
+
+## Tests included
+- Unit test for service persistence (Event + UserTraits).
+- Controller test for POST /events returns accepted and persists rows.

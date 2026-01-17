@@ -1,10 +1,10 @@
 from datetime import datetime, timezone
 
+from src.marketing_messaging_service.models.event import Event
+from src.marketing_messaging_service.models.user_traits import UserTraits
 from src.marketing_messaging_service.repositories.event_repository import EventRepository
 from src.marketing_messaging_service.schemas.event import EventIn, UserTraitsIn
 from src.marketing_messaging_service.services.event_processing_service import EventProcessingService
-from src.marketing_messaging_service.models.event import Event
-from src.marketing_messaging_service.models.user_traits import UserTraits
 
 
 class _DummySendRequestRepository:
@@ -17,7 +17,7 @@ class _DummySuppressionRepository:
         return suppression
 
 
-def test_process_event_persists_event_and_traits(db_session):
+def test_process_event_persists_event_and_traits_via_relationship(db_session):
     service = EventProcessingService(
         event_repository=EventRepository(),
         send_request_repository=_DummySendRequestRepository(),
@@ -43,20 +43,28 @@ def test_process_event_persists_event_and_traits(db_session):
     )
 
     saved_event = service.process_event(db_session, payload)
-
     db_session.flush()
 
     event_row = db_session.query(Event).filter(Event.id == saved_event.id).first()
     assert event_row is not None
     assert event_row.user_id == "u_12345"
     assert event_row.event_type == "payment_failed"
+
     assert event_row.properties is not None
     assert event_row.properties["failure_reason"] == "INSUFFICIENT_FUNDS"
     assert event_row.properties["extra_field"] == "allowed"
 
-    traits_row = db_session.query(UserTraits).filter(UserTraits.event_id == saved_event.id).first()
+    # Verify relationship persisted via cascade (Option A)
+    assert event_row.user_traits is not None
+    assert event_row.user_traits.email == "maria@example.com"
+    assert event_row.user_traits.country == "PT"
+    assert event_row.user_traits.marketing_opt_in is True
+    assert event_row.user_traits.risk_segment == "MEDIUM"
+
+    # Still verify row exists in table
+    traits_row = (
+        db_session.query(UserTraits)
+        .filter(UserTraits.event_id == saved_event.id)
+        .first()
+    )
     assert traits_row is not None
-    assert traits_row.email == "maria@example.com"
-    assert traits_row.country == "PT"
-    assert traits_row.marketing_opt_in is True
-    assert traits_row.risk_segment == "MEDIUM"

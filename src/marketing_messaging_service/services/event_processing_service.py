@@ -22,12 +22,6 @@ class EventProcessingService:
         self.suppression_repository = suppression_repository
 
     def process_event(self, db: Session, payload: EventIn) -> Event:
-        """
-        Step 5.1:
-        - Persist Event (including dynamic JSON properties)
-        - Persist optional UserTraits (1:1)
-        Business logic (rules/dedup/sends) is added in later steps.
-        """
         event = Event(
             user_id=payload.user_id,
             event_type=payload.event_type,
@@ -35,17 +29,13 @@ class EventProcessingService:
             properties=payload.properties,
         )
 
-        saved_event = self.event_repository.add(db, event)
-
         if payload.user_traits is not None:
-            traits = UserTraits(
-                event_id=saved_event.id,
+            event.user_traits = UserTraits(
                 email=payload.user_traits.email,
                 country=payload.user_traits.country,
                 marketing_opt_in=payload.user_traits.marketing_opt_in,
                 risk_segment=payload.user_traits.risk_segment,
             )
-            db.add(traits)
 
-        db.flush()
+        saved_event = self.event_repository.add(db, event)
         return saved_event

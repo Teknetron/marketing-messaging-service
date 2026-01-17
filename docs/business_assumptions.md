@@ -27,3 +27,8 @@ Justification: The service layer will implement all business logic. Controllers 
 
 Assumption 3: The /health endpoint is part of endpoints.py, not main.py.
 Justification: Health checks belong to the HTTP API surface, not to the bootstrap code.
+
+
+# Business Assumptions — Step 5.1
+
+No business decisions introduced in this step.

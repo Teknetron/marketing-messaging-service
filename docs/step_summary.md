@@ -150,3 +150,53 @@ EventController --> "EventAccepted"
 AuditController --> "AuditResponse"
 @enduml
 ```
+
+# Step Summary — Step 5.1 (Event Persistence)
+
+## What Was Implemented
+- Added EventProcessingService with the responsibility to persist:
+  - Event including dynamic JSON properties
+  - UserTraits (1:1) via ORM cascade
+- Integrated service into POST /events controller
+- Implemented and validated service behavior through tests
+
+## Key Change
+UserTraits are now persisted by setting `event.user_traits = UserTraits(...)` and allowing SQLAlchemy to cascade persistence.
+
+## Completed Tests
+- Service-level test confirming event + properties + traits persistence and relationship integrity
+- Controller test ensuring the endpoint returns `{"status": "accepted"}` and data is saved properly
+
+## PlantUML
+```plantuml
+@startuml
+skinparam linetype ortho
+hide methods
+
+package "Controller Layer" {
+  class EventController
+}
+
+package "Service Layer" {
+  class EventProcessingService
+}
+
+package "Repository Layer" {
+  interface IEventRepository
+  class EventRepository
+}
+
+package "Models" {
+  class Event
+  class UserTraits
+}
+
+EventController --> EventProcessingService : process_event()
+EventProcessingService --> IEventRepository : add(event)
+IEventRepository <|.. EventRepository
+
+Event --> UserTraits : 1:1 (cascade)
+EventRepository --> Event
+
+@enduml
+```
