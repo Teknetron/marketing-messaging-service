@@ -69,3 +69,60 @@ This matches the ORM intention of “created/decided time is set by DB” while 
   - `alembic revision -m "create initial tables"`
 - Apply migrations:
   - `alembic upgrade head`
+
+
+# Technical Specs — Step 3 (Repositories)
+
+## Minimal Repository Approach
+We keep only the absolutely necessary CRUD operations.
+
+Repositories included:
+- EventRepository
+- SendRequestRepository
+- SuppressionRepository
+
+Each repository provides only:
+- add()
+- get_by_id() (events only)
+
+We deliberately avoid predictive “fancy methods” such as exists(), get_latest(), etc.
+Those will be added only if the Service Layer explicitly needs them.
+This keeps the architecture minimal and avoids premature complexity.
+
+
+# Technical Specs — Step 4 (Controller Layer + Application Structure)
+
+## Architectural Change: endpoints.py
+We moved FastAPI application creation into a dedicated module:
+`src/marketing_messaging_service/controllers/endpoints.py`.
+
+This module:
+- creates the FastAPI app
+- registers all routers (event_router, audit_router)
+- exposes the `app` object for both uvicorn and tests
+- contains the `/health` endpoint
+
+Benefits:
+- avoids circular imports
+- cleanly separates "app assembly" from "service bootstrapping"
+- supports both CLI (`uvicorn module:app`) and programmatic startup
+
+## main.py as launcher
+`main.py` now only contains:
+- import of settings
+- a uvicorn.run() call pointing to `endpoints:app`
+
+This keeps the entrypoint clean and environment-driven.
+
+## Controllers
+Controllers remain thin and follow a synchronous, layered approach:
+- Route definition
+- Input validation via Pydantic
+- Dependency injection of DB session
+- Delegation to the Service layer (implementation in Step 5)
+
+## Schemas
+- EventIn mirrors the assignment's event payload
+- EventPropertiesIn and UserTraitsIn represent optional nested objects
+- AuditResponse schema matches the required audit output structure
+

@@ -1,12 +1,11 @@
-# src/marketing_messaging_service/main.py
-
-from fastapi import FastAPI
-
-app = FastAPI(title="Marketing Messaging Service")
-
-# routers will be added later
+import uvicorn
+from src.marketing_messaging_service.config.settings import settings
 
 
-@app.get("/health")
-def health_check():
-    return {"status": "ok"}
+if __name__ == "__main__":
+    uvicorn.run(
+        "src.marketing_messaging_service.controllers.endpoints:app",
+        host=settings.api_host,
+        port=settings.api_port,
+        reload=True,  # auto-restart
+    )

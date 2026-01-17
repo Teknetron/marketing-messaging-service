@@ -79,4 +79,74 @@ Event "0..1" <-- Suppression : event_id
 - Implemented a clean downgrade reversing table creation order.
 
 
+# Step Summary — Step 3 (Minimal Repositories)
 
+## What was done
+- Introduced a minimal repository layer.
+- Removed event_properties and user_traits repositories.
+- Removed all prediction-based query methods.
+- Added only add() for all entities and get_by_id() for Event.
+- Prepared the layer for expansion during Service implementation.
+
+## UML
+```plantuml
+@startuml
+interface IEventRepository
+interface ISendRequestRepository
+interface ISuppressionRepository
+
+class EventRepository
+class SendRequestRepository
+class SuppressionRepository
+
+IEventRepository <|.. EventRepository
+ISendRequestRepository <|.. SendRequestRepository
+ISuppressionRepository <|.. SuppressionRepository
+@enduml
+```
+
+# Step Summary — Step 4 (Controller Layer)
+
+## What was done
+- Implemented controllers: EventController and AuditController.
+- Added Pydantic schemas for event ingestion and audit responses.
+- Assembled all routers inside `controllers/endpoints.py`.
+- Moved FastAPI app creation to `endpoints.py`.
+- Updated `main.py` to serve purely as a uvicorn launcher.
+- Ensured dependency injection for DB sessions (synchronous).
+
+## Final File Structure
+```
+controllers/
+├── audit_controller.py
+├── endpoints.py
+└── event_controller.py
+schemas/
+├── audit.py
+└── event.py
+main.py
+```
+
+## Updated UML
+```plantuml
+@startuml
+hide methods
+skinparam linetype ortho
+
+package "HTTP Layer" {
+  class Endpoints {
+    +app: FastAPI
+  }
+  class EventController
+  class AuditController
+}
+
+Endpoints --> EventController
+Endpoints --> AuditController
+
+EventController --> "EventIn"
+EventController --> "EventAccepted"
+
+AuditController --> "AuditResponse"
+@enduml
+```
