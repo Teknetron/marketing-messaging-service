@@ -26,5 +26,6 @@ build-backend = "poetry.core.masonry.api"
 dev = [
     "black (>=25.12.0,<26.0.0)",
     "isort (>=7.0.0,<8.0.0)",
-    "flake8 (>=7.3.0,<8.0.0)"
+    "flake8 (>=7.3.0,<8.0.0)",
+    "pytest (>=9.0.2,<10.0.0)"
 ]

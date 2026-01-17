@@ -1,9 +1,10 @@
 from sqlalchemy.orm import Session
 
 from src.marketing_messaging_service.models.send_request import SendRequest
+from src.marketing_messaging_service.repositories.interfaces import ISendRequestRepository
 
 
-class SendRequestRepository:
+class SendRequestRepository(ISendRequestRepository):
     def add(self, db: Session, send_request: SendRequest) -> SendRequest:
         db.add(send_request)
         db.flush()
