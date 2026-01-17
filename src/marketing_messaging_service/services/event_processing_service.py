@@ -8,6 +8,7 @@ from src.marketing_messaging_service.repositories.interfaces import (
     ISuppressionRepository,
 )
 from src.marketing_messaging_service.schemas.event import EventIn
+from src.marketing_messaging_service.services.rule_evaluation_service import RuleEvaluationService
 
 
 class EventProcessingService:
@@ -16,12 +17,14 @@ class EventProcessingService:
         event_repository: IEventRepository,
         send_request_repository: ISendRequestRepository,
         suppression_repository: ISuppressionRepository,
+        rule_evaluation_service: RuleEvaluationService,
     ):
         self.event_repository = event_repository
         self.send_request_repository = send_request_repository
         self.suppression_repository = suppression_repository
+        self.rule_evaluation_service = rule_evaluation_service
 
-    def process_event(self, db: Session, payload: EventIn) -> Event:
+    def process_event(self, db: Session, payload: EventIn):
         event = Event(
             user_id=payload.user_id,
             event_type=payload.event_type,
@@ -38,4 +41,11 @@ class EventProcessingService:
             )
 
         saved_event = self.event_repository.add(db, event)
-        return saved_event
+
+        decision = self.rule_evaluation_service.evaluate(
+            db=db,
+            event=saved_event,
+            user_traits=saved_event.user_traits,
+        )
+
+        return saved_event, decision

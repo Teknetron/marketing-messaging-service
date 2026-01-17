@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import yaml
 import os
 from datetime import timedelta
@@ -13,11 +15,7 @@ from src.marketing_messaging_service.services.rule_models import Rule, RuleDecis
 class RuleEvaluationService:
     def __init__(self, event_repository: IEventRepository, rules_path: str | None = None):
         self.event_repository = event_repository
-        self.rules_path = (
-            rules_path
-            or os.environ.get("RULES_CONFIG_PATH")
-            or "src/marketing_messaging_service/config/rules.yaml"
-        )
+        self.rules_path = self._resolve_config(rules_path)
         self._rules: list[Rule] | None = None
 
     def evaluate(self, db: Session, event: Event, user_traits: UserTraits | None) -> RuleDecision:
@@ -128,3 +126,12 @@ class RuleEvaluationService:
 
         window = timedelta(hours=hours)
         return (event.event_timestamp - prior.event_timestamp) <= window
+
+    def _resolve_config(self, rules_path):
+        project_root = Path(__file__).parent.parent.parent.parent
+        if rules_path:
+            return rules_path
+        elif os.environ.get("RULES_CONFIG_PATH"):
+            return str(project_root / os.environ.get("RULES_CONFIG_PATH"))
+        return str(project_root / "config" / "rules.yaml")
+

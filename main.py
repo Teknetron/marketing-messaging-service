@@ -7,5 +7,5 @@ if __name__ == "__main__":
         "src.marketing_messaging_service.controllers.endpoints:app",
         host=settings.api_host,
         port=settings.api_port,
-        reload=True,  # auto-restart
+        reload=True,
     )
