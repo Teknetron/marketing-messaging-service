@@ -25,5 +25,18 @@
     "error_code": "Internal technical error mapping"
   }
 }
-
 ```
+
+A rule is:
+
+- Triggered by an event type
+
+- Filtered by conditions (user_traits + event.properties + other context)
+
+- Produces a decision:
+
+  - send template X via channel Y
+
+  - or suppress it (dedup / opt-out / cooldown)
+
+- Produces an explanation (why matched / why suppressed)

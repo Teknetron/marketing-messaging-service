@@ -11,3 +11,14 @@ Rationale: Improves audit traceability by allowing deterministic linkage from a 
 ## Step 5.1 — Minimal repository methods
 Decision: Keep repositories minimal (add / get_by_id only) and add query helpers only when services require them.
 Rationale: Avoids premature abstraction; keeps code small and easy to reason about.
+
+
+## Step 5.2 - Minimal rule service
+
+### Simplified Rule Model
+Decision: Use a single Pydantic Rule class with dictionary subsections.
+Rationale: Highly declarative, clearer YAML mapping, less boilerplate, and avoids unnecessary schema rigidity.
+
+### No Nested Conditions for MVP
+Decision: Only flat `conditions.all` lists are supported.
+Rationale: All current business rules are expressible without nesting; avoids complexity

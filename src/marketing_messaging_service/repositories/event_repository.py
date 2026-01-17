@@ -18,3 +18,11 @@ class EventRepository(IEventRepository):
             .filter(Event.id == event_id)
             .first()
         )
+
+    def get_latest_by_user_and_type(self, db: Session, user_id: str, event_type: str) -> Event | None:
+        return (
+            db.query(Event)
+            .filter(Event.user_id == user_id, Event.event_type == event_type)
+            .order_by(Event.event_timestamp.desc())
+            .first()
+        )

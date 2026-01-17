@@ -32,3 +32,9 @@ Justification: Health checks belong to the HTTP API surface, not to the bootstra
 # Business Assumptions — Step 5.1
 
 No business decisions introduced in this step.
+
+
+# Business Assumptions — Step 5.2
+
+No new explicit business assumptions were introduced in this step.
+Rules are evaluated exactly as written in rules.yaml.

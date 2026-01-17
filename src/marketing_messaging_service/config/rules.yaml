@@ -1,0 +1,84 @@
+rules:
+  - name: "welcome_email"
+    description: "Send welcome email on signup if user opted in"
+    enabled: true
+
+    trigger:
+      event_type: "signup_completed"
+
+    conditions:
+      all:
+        - field: "user_traits.marketing_opt_in"
+          operator: "equals"
+          value: true
+
+    action:
+      type: "send"
+      template_name: "WELCOME_EMAIL"
+      delivery_method: "email"
+
+    suppression:
+      mode: "once_ever"
+
+  - name: "bank_link_nudge"
+    description: "Send SMS if bank is linked within 24 hours of signup"
+    enabled: true
+
+    trigger:
+      event_type: "link_bank_success"
+
+    conditions:
+      all:
+        - prior_event:
+            event_type: "signup_completed"
+            hours: 24
+
+    action:
+      type: "send"
+      template_name: "BANK_LINK_NUDGE_SMS"
+      delivery_method: "sms"
+
+    suppression:
+      mode: "once_ever"
+
+  - name: "insufficient_funds_email"
+    description: "Send insufficient funds email once per calendar day"
+    enabled: true
+
+    trigger:
+      event_type: "payment_failed"
+
+    conditions:
+      all:
+        - field: "properties.failure_reason"
+          operator: "equals"
+          value: "INSUFFICIENT_FUNDS"
+
+    action:
+      type: "send"
+      template_name: "INSUFFICIENT_FUNDS_EMAIL"
+      delivery_method: "email"
+
+    suppression:
+      mode: "once_per_calendar_day"
+
+  - name: "high_risk_alert"
+    description: "Escalate when 3+ attempts failed"
+    enabled: true
+
+    trigger:
+      event_type: "payment_failed"
+
+    conditions:
+      all:
+        - field: "properties.attempt_number"
+          operator: "gte"
+          value: 3
+
+    action:
+      type: "alert"
+      template_name: "HIGH_RISK_ALERT"
+      delivery_method: "internal"
+
+    suppression:
+      mode: "none"

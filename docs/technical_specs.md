@@ -159,3 +159,69 @@ EventProcessingService.process_event():
 ## Tests included
 - Unit test for service persistence (Event + UserTraits).
 - Controller test for POST /events returns accepted and persists rows.
+
+
+# Technical Specs — Step 5.2 (Rule Evaluation Service)
+
+## Scope
+This step introduces the RuleEvaluationService, responsible for determining
+what action (send, alert, or none) should be taken after an event is saved.
+The service evaluates declarative rules stored in a YAML file.
+
+The RuleEvaluationService does **not** perform message delivery or suppression;
+it only produces a RuleDecision used later by the orchestration logic.
+
+## Rule Format
+Rules are stored in YAML using a simplified, declarative structure:
+
+- `trigger.event_type`: which event activates the rule
+- `conditions.all`: flat list of AND conditions
+- `action`: send or alert instruction
+- `suppression.mode`: delivery frequency policy
+
+Supported field paths:
+- `event.<field>`
+- `user_traits.<field>`
+- `properties.<key>`
+
+Supported operators:
+- `equals`
+- `gte`
+
+Prior-event condition:
+```yaml
+- prior_event:
+    event_type: "signup_completed"
+    hours: 24
+```
+This condition checks if the most recent event of that type occurred within a time window.
+
+## Rule Model
+
+A single Rule model is used. Sub-sections (trigger, conditions, action) remain dictionaries
+to avoid overengineering and maintain readability.
+
+Event History Access
+
+RuleEvaluationService retrieves past events using:
+
+```
+EventRepository.get_latest_by_user_and_type()
+```
+
+This provides the minimal required history lookup for time-window rules.
+
+Outputs
+
+## RuleEvaluationService returns a RuleDecision including:
+- action_type (send / alert / none)
+- template_name
+- delivery_method
+- suppression_mode
+- matched_rule (name of rule)
+- reason (audit-friendly explanation)
+
+## What is NOT done in this step
+- No orchestration between rule decisions and SendRequest/Suppression
+- No updates to EventProcessingService yet
+- No message sending

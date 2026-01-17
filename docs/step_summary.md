@@ -200,3 +200,55 @@ EventRepository --> Event
 
 @enduml
 ```
+
+# Step Summary — Step 5.2 (Declarative Rule Evaluation)
+
+## What Was Done
+- Implemented RuleEvaluationService with simplified rule model.
+- Added YAML-driven declarative rules for all four required flows:
+  - Welcome email on signup
+  - Bank link nudge within 24 hours
+  - Insufficient funds email (once per day)
+  - High risk alert (attempt_number >= 3)
+- Added repository method to query latest event of a given type.
+- Added RuleDecision model for downstream orchestration.
+- Implemented field-condition and prior-event-condition evaluators.
+- Added comprehensive unit tests for all rule cases.
+
+## Key Design Points
+- Simple declarative YAML
+- Minimal operators (equals / gte)
+- Single Rule class for clarity
+- Flat AND-only conditions (no nesting needed)
+- Pure functional evaluation (no side effects)
+- EventProcessingService not yet wired to rules (Step 5.3)
+
+## PlantUML
+```plantuml
+@startuml
+skinparam linetype ortho
+hide methods
+
+package "Services" {
+  class EventProcessingService
+  class RuleEvaluationService
+}
+
+package "Repositories" {
+  interface IEventRepository
+  class EventRepository
+}
+
+package "Models" {
+  class Event
+  class UserTraits
+  class RuleDecision
+}
+
+EventProcessingService --> RuleEvaluationService : will call in Step 5.3
+RuleEvaluationService --> IEventRepository : reads prior events
+IEventRepository <|.. EventRepository
+EventRepository --> Event
+Event --> UserTraits : 1:1
+@enduml
+```

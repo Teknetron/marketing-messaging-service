@@ -17,3 +17,81 @@ Content-Type: application/json
     "risk_segment": "MEDIUM"
   }
 }
+
+###
+POST http://127.0.0.1:8000/events
+Content-Type: application/json
+
+{
+  "user_id": "u_rule_1",
+  "event_type": "signup_completed",
+  "event_timestamp": "2025-01-01T10:00:00Z",
+  "properties": {},
+  "user_traits": {
+    "email": "test@example.com",
+    "country": "PT",
+    "marketing_opt_in": true,
+    "risk_segment": "LOW"
+  }
+}
+
+
+###
+POST http://127.0.0.1:8000/events
+Content-Type: application/json
+
+{
+  "user_id": "u_rule_2",
+  "event_type": "signup_completed",
+  "event_timestamp": "2025-01-01T09:00:00Z",
+  "properties": {},
+  "user_traits": {
+    "email": "bank@example.com",
+    "marketing_opt_in": true
+  }
+}
+
+
+###
+POST http://127.0.0.1:8000/events
+Content-Type: application/json
+
+{
+  "user_id": "u_rule_2",
+  "event_type": "link_bank_success",
+  "event_timestamp": "2025-01-02T08:00:00Z",
+  "properties": {}
+}
+
+
+###
+POST http://127.0.0.1:8000/events
+Content-Type: application/json
+
+{
+  "user_id": "u_rule_3",
+  "event_type": "payment_failed",
+  "event_timestamp": "2025-01-03T12:00:00Z",
+  "properties": {
+    "failure_reason": "INSUFFICIENT_FUNDS",
+    "attempt_number": 1
+  }
+}
+
+
+###
+POST http://127.0.0.1:8000/events
+Content-Type: application/json
+
+{
+  "user_id": "u_rule_4",
+  "event_type": "payment_failed",
+  "event_timestamp": "2025-01-04T15:00:00Z",
+  "properties": {
+    "failure_reason": "INSUFFICIENT_FUNDS",
+    "attempt_number": 3
+  }
+}
+
+
+

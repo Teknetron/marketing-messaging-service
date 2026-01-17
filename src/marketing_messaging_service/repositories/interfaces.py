@@ -17,6 +17,12 @@ class IEventRepository(ABC):
         raise NotImplementedError
 
 
+    @abstractmethod
+    def get_latest_by_user_and_type(self, db: Session, user_id: str, event_type: str) -> Event | None:
+        raise NotImplementedError
+
+
+
 class ISendRequestRepository(ABC):
     @abstractmethod
     def add(self, db: Session, send_request: SendRequest) -> SendRequest:
