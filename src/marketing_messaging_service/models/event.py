@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from sqlalchemy import DateTime, Integer, String, func
+from sqlalchemy import DateTime, Integer, String, func, JSON
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from src.marketing_messaging_service.infrastructure.database import Base
@@ -16,17 +16,13 @@ class Event(Base):
 
     event_timestamp: Mapped[datetime] = mapped_column(DateTime, nullable=False)
 
+    # Dynamic event payload stored as JSON.
+    properties: Mapped[dict | None] = mapped_column(JSON, nullable=True)
+
     created_at: Mapped[datetime] = mapped_column(
         DateTime,
         nullable=False,
         server_default=func.now(),
-    )
-
-    properties = relationship(
-        "EventProperties",
-        back_populates="event",
-        cascade="all, delete-orphan",
-        uselist=False,
     )
 
     user_traits = relationship(
