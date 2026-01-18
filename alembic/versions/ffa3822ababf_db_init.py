@@ -1,8 +1,8 @@
-"""create initial tables
+"""db init
 
-Revision ID: f734665c837e
+Revision ID: ffa3822ababf
 Revises: 
-Create Date: 2026-01-17 00:59:04.539820
+Create Date: 2026-01-19 02:19:42.958930
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = 'f734665c837e'
+revision: str = 'ffa3822ababf'
 down_revision: Union[str, Sequence[str], None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -26,21 +26,28 @@ def upgrade() -> None:
     sa.Column('user_id', sa.String(length=64), nullable=False),
     sa.Column('event_type', sa.String(length=64), nullable=False),
     sa.Column('event_timestamp', sa.DateTime(), nullable=False),
+    sa.Column('properties', sa.JSON(), nullable=True),
     sa.Column('created_at', sa.DateTime(), server_default=sa.text('(CURRENT_TIMESTAMP)'), nullable=False),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_index(op.f('ix_events_event_type'), 'events', ['event_type'], unique=False)
     op.create_index(op.f('ix_events_user_id'), 'events', ['user_id'], unique=False)
-    op.create_table('event_properties',
+    op.create_table('decisions',
     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
+    sa.Column('user_id', sa.String(), nullable=False),
     sa.Column('event_id', sa.Integer(), nullable=False),
-    sa.Column('amount', sa.Float(), nullable=True),
-    sa.Column('attempt_number', sa.Integer(), nullable=True),
-    sa.Column('failure_reason', sa.String(length=64), nullable=True),
-    sa.ForeignKeyConstraint(['event_id'], ['events.id'], ondelete='CASCADE'),
+    sa.Column('event_type', sa.String(), nullable=False),
+    sa.Column('matched_rule', sa.String(), nullable=True),
+    sa.Column('action_type', sa.String(), nullable=False),
+    sa.Column('outcome', sa.String(), nullable=False),
+    sa.Column('reason', sa.String(), nullable=False),
+    sa.Column('template_name', sa.String(), nullable=True),
+    sa.Column('channel', sa.String(), nullable=True),
+    sa.Column('created_at', sa.DateTime(), nullable=False),
+    sa.ForeignKeyConstraint(['event_id'], ['events.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
-    op.create_index(op.f('ix_event_properties_event_id'), 'event_properties', ['event_id'], unique=True)
+    op.create_index(op.f('ix_decisions_user_id'), 'decisions', ['user_id'], unique=False)
     op.create_table('send_requests',
     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
     sa.Column('user_id', sa.String(length=64), nullable=False),
@@ -95,8 +102,8 @@ def downgrade() -> None:
     op.drop_index(op.f('ix_send_requests_template_name'), table_name='send_requests')
     op.drop_index(op.f('ix_send_requests_event_id'), table_name='send_requests')
     op.drop_table('send_requests')
-    op.drop_index(op.f('ix_event_properties_event_id'), table_name='event_properties')
-    op.drop_table('event_properties')
+    op.drop_index(op.f('ix_decisions_user_id'), table_name='decisions')
+    op.drop_table('decisions')
     op.drop_index(op.f('ix_events_user_id'), table_name='events')
     op.drop_index(op.f('ix_events_event_type'), table_name='events')
     op.drop_table('events')

@@ -1,65 +1,43 @@
 from sqlalchemy.orm import Session
 
-from src.marketing_messaging_service.repositories.event_repository import EventRepository
-from src.marketing_messaging_service.repositories.send_request_repository import SendRequestRepository
-from src.marketing_messaging_service.repositories.suppression_repository import SuppressionRepository
+from src.marketing_messaging_service.repositories.interfaces import IEventRepository, ISendRequestRepository, \
+    IDecisionRepository
 from src.marketing_messaging_service.schemas.audit import AuditLog, AuditLogItem
 
 
 class AuditService:
     def __init__(
         self,
-        event_repository: EventRepository,
-        send_request_repository: SendRequestRepository,
-        suppression_repository: SuppressionRepository,
+        event_repository: IEventRepository,
+        send_request_repository: ISendRequestRepository,
+        suppression_repository: IEventRepository,
+        decision_repository: IDecisionRepository,
     ):
         self.event_repository = event_repository
         self.send_request_repository = send_request_repository
         self.suppression_repository = suppression_repository
+        self.decision_repository = decision_repository
 
     def get_audit_log(self, db: Session, user_id: str) -> AuditLog:
-        events = self.event_repository.list_by_user(db, user_id)
-        send_requests = self.send_request_repository.list_by_user(db, user_id)
-        suppressions = self.suppression_repository.list_by_user(db, user_id)
+        decisions = self.decision_repository.list_by_user(db, user_id)
 
         items: list[AuditLogItem] = []
 
-        for e in events:
+
+        for d in decisions:
             items.append(
                 AuditLogItem(
-                    timestamp=e.event_timestamp,
-                    kind="event",
-                    event_id=e.id,
-                    event_type=e.event_type,
+                    timestamp=d.created_at,
+                    kind="decision",
+                    event_id=d.event_id,
+                    event_type=d.event_type,
+                    outcome=d.outcome,
+                    reason=d.reason,
+                    template_name=d.template_name,
+                    channel=d.channel,
                 )
             )
 
-        for s in send_requests:
-            # Simple inference: internal channel is "alert", everything else is "allow"
-            outcome = "alert" if s.channel == "internal" else "allow"
-
-            items.append(
-                AuditLogItem(
-                    timestamp=s.decided_at,
-                    kind="send_request",
-                    template_name=s.template_name,
-                    channel=s.channel,
-                    outcome=outcome,
-                    reason=s.reason,
-                )
-            )
-
-        for sup in suppressions:
-            items.append(
-                AuditLogItem(
-                    timestamp=sup.decided_at,
-                    kind="suppression",
-                    event_id=sup.event_id,
-                    template_name=sup.template_name,
-                    outcome="suppress",
-                    reason=sup.suppression_reason,
-                )
-            )
 
         items.sort(key=lambda x: x.timestamp, reverse=True)
 

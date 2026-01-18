@@ -3,6 +3,7 @@ from datetime import datetime
 
 from sqlalchemy.orm import Session
 
+from src.marketing_messaging_service.models import Decision
 from src.marketing_messaging_service.models.event import Event
 from src.marketing_messaging_service.models.send_request import SendRequest
 from src.marketing_messaging_service.models.suppression import Suppression
@@ -52,8 +53,20 @@ class ISendRequestRepository(ABC):
     ) -> bool:
         raise NotImplementedError
 
+    def list_by_user(self, db: Session, user_id: str) -> list[SendRequest]:
+        raise NotImplementedError
+
 
 class ISuppressionRepository(ABC):
     @abstractmethod
     def add(self, db: Session, suppression: Suppression) -> Suppression:
+        raise NotImplementedError
+
+
+class IDecisionRepository(ABC):
+    @abstractmethod
+    def add(self, db: Session, event: Decision) -> Decision:
+        raise NotImplementedError
+
+    def list_by_user(self, db: Session, user_id: str) -> list[Decision]:
         raise NotImplementedError

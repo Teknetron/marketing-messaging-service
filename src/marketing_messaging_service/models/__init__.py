@@ -1,3 +1,4 @@
+from src.marketing_messaging_service.models.decision import Decision
 from src.marketing_messaging_service.models.event import Event
 from src.marketing_messaging_service.models.send_request import SendRequest
 from src.marketing_messaging_service.models.suppression import Suppression
@@ -8,4 +9,5 @@ __all__ = [
     "UserTraits",
     "SendRequest",
     "Suppression",
+    "Decision"
 ]
