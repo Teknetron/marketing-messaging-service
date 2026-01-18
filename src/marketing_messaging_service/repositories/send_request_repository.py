@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from sqlalchemy import func
+from sqlalchemy import func, select
 
 from src.marketing_messaging_service.models.send_request import SendRequest
 from src.marketing_messaging_service.repositories.interfaces import ISendRequestRepository
@@ -34,3 +34,11 @@ class SendRequestRepository(ISendRequestRepository):
             .first()
             is not None
         )
+
+    def list_by_user(self, db: Session, user_id: str) -> list[SendRequest]:
+        stmt = (
+            select(SendRequest)
+            .where(SendRequest.user_id == user_id)
+            .order_by(SendRequest.decided_at.desc())
+        )
+        return list(db.scalars(stmt).all())

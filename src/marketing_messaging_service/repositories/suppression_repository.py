@@ -1,3 +1,4 @@
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from src.marketing_messaging_service.models.suppression import Suppression
@@ -10,3 +11,11 @@ class SuppressionRepository(ISuppressionRepository):
         db.flush()
         db.refresh(suppression)
         return suppression
+
+    def list_by_user(self, db: Session, user_id: str) -> list[Suppression]:
+        stmt = (
+            select(Suppression)
+            .where(Suppression.user_id == user_id)
+            .order_by(Suppression.decided_at.desc())
+        )
+        return list(db.scalars(stmt).all())

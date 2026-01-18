@@ -1,9 +1,8 @@
 from sqlalchemy.orm import Session
 
-from src.marketing_messaging_service.db_debug import print_db_connection_info
 from src.marketing_messaging_service.models.event import Event
 from src.marketing_messaging_service.repositories.interfaces import IEventRepository
-
+from sqlalchemy import select
 
 class EventRepository(IEventRepository):
     def add(self, db: Session, event: Event) -> Event:
@@ -26,3 +25,14 @@ class EventRepository(IEventRepository):
             .order_by(Event.event_timestamp.desc())
             .first()
         )
+
+
+
+    def list_by_user(self, db: Session, user_id: str) -> list[Event]:
+        stmt = (
+            select(Event)
+            .where(Event.user_id == user_id)
+            .order_by(Event.event_timestamp.desc())
+        )
+        return list(db.scalars(stmt).all())
+
