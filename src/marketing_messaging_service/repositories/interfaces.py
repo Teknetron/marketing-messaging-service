@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from datetime import datetime
 
 from sqlalchemy.orm import Session
 
@@ -16,11 +17,26 @@ class IEventRepository(ABC):
     def get_by_id(self, db: Session, event_id: int) -> Event | None:
         raise NotImplementedError
 
-
     @abstractmethod
-    def get_latest_by_user_and_type(self, db: Session, user_id: str, event_type: str) -> Event | None:
+    def get_latest_by_user_and_type(
+        self, db: Session, user_id: str, event_type: str
+    ) -> Event | None:
         raise NotImplementedError
 
+    @abstractmethod
+    def list_by_user(self, db: Session, user_id: str) -> list[Event]:
+        raise NotImplementedError
+
+    @abstractmethod
+    def exists_by_user_and_type_in_window(
+        self,
+        db: Session,
+        user_id: str,
+        event_type: str,
+        window_start: datetime,
+        window_end: datetime,
+    ) -> bool:
+        raise NotImplementedError
 
 
 class ISendRequestRepository(ABC):
