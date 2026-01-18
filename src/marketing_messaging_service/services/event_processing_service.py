@@ -26,7 +26,7 @@ class EventProcessingService:
         self.suppression_repository = suppression_repository
         self.rule_evaluation_service = rule_evaluation_service
         self.suppression_service = suppression_service
-        self.messaging_provider = messaging_provider  # NEW
+        self.messaging_provider = messaging_provider
 
     def process_event(self, db: Session, payload: EventIn):
         event = Event(
@@ -66,8 +66,7 @@ class EventProcessingService:
                 reason=f"rule:{decision.matched_rule}",
             )
             self.send_request_repository.add(db, send_request)
-
-
+            # TODO: add new bool field to send request "send_message_success"
             self.messaging_provider.send_message(
                 user_id=saved_event.user_id,
                 template_name=decision.template_name,
@@ -83,7 +82,7 @@ class EventProcessingService:
                 reason=f"rule:{decision.matched_rule}",
             )
             self.send_request_repository.add(db, send_request)
-
+            # TODO: add new bool field to send request "send_message_success"
             self.messaging_provider.send_message(
                 user_id=saved_event.user_id,
                 template_name=decision.template_name,
