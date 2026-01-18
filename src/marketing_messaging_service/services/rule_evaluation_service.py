@@ -99,23 +99,19 @@ class RuleEvaluationService:
             return False  # Unknown operator
 
     def _check_prior_event_condition(self, condition: dict, db: Session, event: Event) -> bool:
-        """Check if a prior event condition passes."""
         event_type = condition["event_type"]
         hours_limit = condition["hours"]
 
-        prior_event = self.event_repository.get_latest_by_user_and_type(
+        window_end = event.event_timestamp
+        window_start = window_end - timedelta(hours=hours_limit)
+
+        return self.event_repository.exists_by_user_and_type_in_window(
             db=db,
             user_id=event.user_id,
             event_type=event_type,
+            window_start=window_start,
+            window_end=window_end,
         )
-
-        if prior_event is None:
-            return False
-
-        time_diff = event.event_timestamp - prior_event.event_timestamp
-        max_time_diff = timedelta(hours=hours_limit)
-
-        return time_diff <= max_time_diff
 
     def _get_field_value(self, field_path: str, event: Event, user_traits: UserTraits | None):
         """Get the actual value from event or user_traits."""
