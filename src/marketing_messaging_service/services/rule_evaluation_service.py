@@ -8,6 +8,7 @@ from src.marketing_messaging_service.models.event import Event
 from src.marketing_messaging_service.models.user_traits import UserTraits
 from src.marketing_messaging_service.repositories.interfaces import IEventRepository
 from src.marketing_messaging_service.services.rule_models import Rule, RuleDecision
+from src.marketing_messaging_service.services.rule_validation import validate_rules_config
 
 
 class RuleEvaluationService:
@@ -48,7 +49,9 @@ class RuleEvaluationService:
         with open(self.rules_path, "r", encoding="utf-8") as f:
             data = yaml.safe_load(f) or {}
 
-        self._rules = [Rule(**rule_data) for rule_data in data.get("rules", [])]
+        validated_rules = validate_rules_config(data)
+
+        self._rules = [Rule(**rule_data) for rule_data in validated_rules]
         return self._rules
 
     def _rule_matches(self, rule: Rule, db: Session, event: Event, user_traits: UserTraits | None) -> bool:
