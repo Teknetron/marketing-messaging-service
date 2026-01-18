@@ -28,6 +28,14 @@ class ISendRequestRepository(ABC):
     def add(self, db: Session, send_request: SendRequest) -> SendRequest:
         raise NotImplementedError
 
+    def exists_for_user_and_template(self, db, user_id: str, template_name: str) -> bool:
+        raise NotImplementedError
+
+    def exists_for_user_and_template_on_date(
+        self, db, user_id: str, template_name: str, date
+    ) -> bool:
+        raise NotImplementedError
+
 
 class ISuppressionRepository(ABC):
     @abstractmethod

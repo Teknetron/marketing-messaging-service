@@ -1,14 +1,13 @@
 from sqlalchemy.orm import Session
 
+from src.marketing_messaging_service.models import SendRequest, Suppression
 from src.marketing_messaging_service.models.event import Event
 from src.marketing_messaging_service.models.user_traits import UserTraits
-from src.marketing_messaging_service.repositories.interfaces import (
-    IEventRepository,
-    ISendRequestRepository,
-    ISuppressionRepository,
-)
+from src.marketing_messaging_service.repositories.interfaces import IEventRepository, ISendRequestRepository, \
+    ISuppressionRepository
 from src.marketing_messaging_service.schemas.event import EventIn
 from src.marketing_messaging_service.services.rule_evaluation_service import RuleEvaluationService
+from src.marketing_messaging_service.services.suppression_service import SuppressionService
 
 
 class EventProcessingService:
@@ -18,11 +17,13 @@ class EventProcessingService:
         send_request_repository: ISendRequestRepository,
         suppression_repository: ISuppressionRepository,
         rule_evaluation_service: RuleEvaluationService,
+        suppression_service: SuppressionService,
     ):
         self.event_repository = event_repository
         self.send_request_repository = send_request_repository
         self.suppression_repository = suppression_repository
         self.rule_evaluation_service = rule_evaluation_service
+        self.suppression_service = suppression_service
 
     def process_event(self, db: Session, payload: EventIn):
         event = Event(
@@ -48,4 +49,40 @@ class EventProcessingService:
             user_traits=saved_event.user_traits,
         )
 
-        return saved_event, decision
+        outcome, suppression_reason = self.suppression_service.evaluate(
+            db=db,
+            user_id=saved_event.user_id,
+            decision=decision,
+        )
+
+        if outcome == "allow":
+            send_request = SendRequest(
+                user_id=saved_event.user_id,
+                template_name=decision.template_name,
+                channel=decision.delivery_method,
+                reason=f"rule:{decision.matched_rule}",
+            )
+            self.send_request_repository.add(db, send_request)
+
+        elif outcome == "alert":
+            send_request = SendRequest(
+                user_id=saved_event.user_id,
+                template_name=decision.template_name,
+                channel="internal",
+                reason=f"rule:{decision.matched_rule}",
+            )
+            self.send_request_repository.add(db, send_request)
+
+        elif outcome == "suppress":
+            suppression = Suppression(
+                user_id=saved_event.user_id,
+                template_name=decision.template_name,
+                suppression_reason=suppression_reason,
+                event_id=saved_event.id,
+            )
+            self.suppression_repository.add(db, suppression)
+
+        channel = "internal" if outcome == "alert" else decision.delivery_method
+        reason = suppression_reason if outcome == "suppress" else decision.reason
+
+        return saved_event, decision, outcome, channel, reason
