@@ -22,3 +22,21 @@ Rationale: Highly declarative, clearer YAML mapping, less boilerplate, and avoid
 ### No Nested Conditions for MVP
 Decision: Only flat `conditions.all` lists are supported.
 Rationale: All current business rules are expressible without nesting; avoids complexity
+
+## Step 5.3
+
+### Decision: Rule evaluation is triggered immediately after event persistence
+Rationale: ensures all business logic related to the event occurs in a deterministic
+order and maintains the pipeline integrity.
+
+### Decision: EventProcessingService returns both event and decision
+Rationale: This will be consumed in Step 5.4 for suppression and Step 5.5 for
+message orchestration. It keeps the service flexible and testable.
+
+### Decision: Continue explicit passing of `db` to repositories and RuleEvaluationService
+Rationale: SQLAlchemy sessions are request-scoped. Repositories remain stateless
+and session-agnostic, avoiding lifecycle and concurrency issues.
+
+### Decision: No creation of SendRequest or Suppression rows yet
+Rationale: Prevents partially implemented behavior and isolates responsibilities.
+Suppression logic is handled in Step 5.4.

@@ -252,3 +252,52 @@ EventRepository --> Event
 Event --> UserTraits : 1:1
 @enduml
 ```
+
+
+# Step Summary — Step 5.3 (Connect Rule Evaluation to Event Processing)
+
+## What Was Done
+- EventProcessingService updated to invoke RuleEvaluationService after event persistence.
+- Service now returns a tuple (Event, RuleDecision).
+- No suppression, sending, or side effects introduced yet.
+- Verified integration through tests that check both persistence and evaluation.
+
+## Why This Matters
+This step bridges raw event ingestion and business logic evaluation.
+It sets the foundation for suppression/deduplication (Step 5.4) and the final
+message orchestration (Step 5.5).
+
+## PlantUML — Updated Component Flow
+```plantuml
+@startuml
+skinparam linetype ortho
+hide methods
+
+package "Controllers" {
+  class EventController
+}
+
+package "Services" {
+  class EventProcessingService
+  class RuleEvaluationService
+}
+
+package "Repositories" {
+  interface IEventRepository
+  class EventRepository
+}
+
+package "Models" {
+  class Event
+  class RuleDecision
+}
+
+EventController --> EventProcessingService : process_event()
+EventProcessingService --> IEventRepository : save event
+IEventRepository <|.. EventRepository
+EventProcessingService --> RuleEvaluationService : evaluate()
+RuleEvaluationService --> IEventRepository : fetch prior events
+EventProcessingService --> RuleDecision : returns with event
+
+@enduml
+```

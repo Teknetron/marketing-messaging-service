@@ -38,3 +38,12 @@ No business decisions introduced in this step.
 
 No new explicit business assumptions were introduced in this step.
 Rules are evaluated exactly as written in rules.yaml.
+
+
+## Step 5.3
+
+No new business assumptions were introduced in this step.
+
+The service simply evaluates rules and returns decisions without triggering
+delivery or suppression logic. Business decisions regarding deduplication and
+delivery frequency are introduced in later steps.

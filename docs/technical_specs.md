@@ -225,3 +225,32 @@ Outputs
 - No orchestration between rule decisions and SendRequest/Suppression
 - No updates to EventProcessingService yet
 - No message sending
+
+
+## Step 5.3 — Connecting Rule Evaluation to Event Processing
+
+### Purpose
+This step integrates the RuleEvaluationService into the EventProcessingService.
+After persisting an event, the service now evaluates rules and returns both:
+
+- The saved Event model
+- A RuleDecision object describing what action (if any) should occur next
+
+### Updated Workflow
+1. Controller receives event payload.
+2. Controller delegates to EventProcessingService.
+3. EventProcessingService:
+   - Creates Event + UserTraits models
+   - Persists via EventRepository
+   - Calls RuleEvaluationService.evaluate()
+4. Returns (event, decision) tuple to the caller.
+
+### Design Principles Preserved
+- No side effects inside RuleEvaluationService.
+- EventProcessingService remains a pure orchestration layer.
+- Repositories still require explicit `db` session injection.
+- No suppression or sending yet — postponed to Step 5.4.
+
+### No behavior changes in controllers (yet)
+Controllers continue returning a generic response. RuleDecision
+will be used later by suppression/delivery layers.
