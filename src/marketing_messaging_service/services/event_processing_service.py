@@ -104,7 +104,7 @@ class EventProcessingService:
                 suppression_reason=suppression_reason,
                 event_id=saved_event.id,
             )
-            self.suppression_repository.add(db, suppression)
+            self.suppression_repository.add(db, suppression)  # TODO: move to supression servce
 
         channel = "internal" if outcome == "alert" else decision.delivery_method
         reason = suppression_reason if outcome == "suppress" else decision.reason
