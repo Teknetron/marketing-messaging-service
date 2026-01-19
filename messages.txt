@@ -3,3 +3,4 @@ user_id=user_002 | template=BANK_LINK_NUDGE_SMS | channel=sms | text=[Missing te
 user_id=user_003 | template=INSUFFICIENT_FUNDS_EMAIL | channel=email | text=It looks like your payment didn't go through due to a low balance. Just a quick top-up should do the trick! | reason=rule:insufficient_funds_email
 user_id=user_003 | template=INSUFFICIENT_FUNDS_EMAIL | channel=email | text=It looks like your payment didn't go through due to a low balance. Just a quick top-up should do the trick! | reason=rule:insufficient_funds_email
 user_id=user_004 | template=HIGH_RISK_ALERT | channel=internal | text=We've noticed a few unsuccessful payment attempts and want to make sure your account is secure. | reason=rule:high_risk_alert
+user_id=user_003 | template=INSUFFICIENT_FUNDS_EMAIL | channel=email | text=It looks like your payment didn't go through due to a low balance. Just a quick top-up should do the trick! | reason=rule:insufficient_funds_email

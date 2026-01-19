@@ -15,7 +15,7 @@ def _get_database_url() -> str:
     # `settings.py` is at: `.../src/marketing_messaging_service/config/settings.py`
     # Repo root is 4 levels up: config -> marketing_messaging_service -> src -> repo
     repo_root = Path(__file__).resolve().parents[3]
-    default_db_path = (repo_root / "_messaging.db").resolve()
+    default_db_path = (repo_root / "messaging.db").resolve()
 
     env_url = os.environ.get("DATABASE_URL")
     if not env_url:

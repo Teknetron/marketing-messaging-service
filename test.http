@@ -1,97 +1,173 @@
-POST http://127.0.0.1:8000/events
+### =========================================================================
+### STEP 0: CLEANUP / PREPARATION
+### (Assumes a fresh state or unique user_ids for this test run)
+### =========================================================================
+@baseUrl = http://localhost:8000
+@user_welcome = user_001
+@user_bank = user_002
+@user_funds = user_003
+@user_risk = user_004
+@timestamp_now = 2025-10-31T10:00:00Z
+@timestamp_plus_2h = 2025-10-31T12:00:00Z
+@timestamp_next_day = 2025-11-01T11:00:00Z
+
+### =========================================================================
+### SCENARIO 1: Welcome Email (once_ever suppression)
+### =========================================================================
+
+# 1a. Valid Signup (Should ALLOW)
+POST {{baseUrl}}/events
 Content-Type: application/json
 
 {
-  "user_id": "u_12345",
-  "event_type": "payment_failed",
-  "event_timestamp": "2025-10-31T19:22:11Z",
-  "properties": {
-    "amount": 1425.00,
-    "attempt_number": 2,
-    "failure_reason": "INSUFFICIENT_FUNDS"
-  },
+  "user_id": "{{user_welcome}}",
+  "event_type": "signup_completed",
+  "event_timestamp": "{{timestamp_now}}",
+  "properties": {},
   "user_traits": {
-    "email": "maria@example.com",
-    "country": "PT",
-    "marketing_opt_in": true,
-    "risk_segment": "MEDIUM"
+    "email": "welcome@example.com",
+    "marketing_opt_in": true
   }
 }
 
 ###
-POST http://127.0.0.1:8000/events
+
+# 1b. Duplicate Signup (Should SUPPRESS - Mode: once_ever)
+POST {{baseUrl}}/events
 Content-Type: application/json
 
 {
-  "user_id": "u_rule_1",
+  "user_id": "{{user_welcome}}",
   "event_type": "signup_completed",
-  "event_timestamp": "2025-01-01T10:00:00Z",
+  "event_timestamp": "{{timestamp_plus_2h}}",
   "properties": {},
   "user_traits": {
-    "email": "test@example.com",
-    "country": "PT",
-    "marketing_opt_in": true,
-    "risk_segment": "LOW"
-  }
-}
-
-
-###
-POST http://127.0.0.1:8000/events
-Content-Type: application/json
-
-{
-  "user_id": "u_rule_2",
-  "event_type": "signup_completed",
-  "event_timestamp": "2025-01-01T09:00:00Z",
-  "properties": {},
-  "user_traits": {
-    "email": "bank@example.com",
+    "email": "welcome@example.com",
     "marketing_opt_in": true
   }
 }
 
 
-###
-POST http://127.0.0.1:8000/events
+### =========================================================================
+### SCENARIO 2: Bank Link Nudge (24h Window & Rule Matching)
+### =========================================================================
+
+# 2a. User Sells Signup (Context for the nudge)
+POST {{baseUrl}}/events
 Content-Type: application/json
 
 {
-  "user_id": "u_rule_2",
+  "user_id": "{{user_bank}}",
+  "event_type": "signup_completed",
+  "event_timestamp": "{{timestamp_now}}",
+  "properties": {},
+  "user_traits": { "marketing_opt_in": false }
+}
+
+###
+
+# 2b. Link Bank within 2 hours (Should ALLOW - within 24h window)
+POST {{baseUrl}}/events
+Content-Type: application/json
+
+{
+  "user_id": "{{user_bank}}",
   "event_type": "link_bank_success",
-  "event_timestamp": "2025-01-02T08:00:00Z",
-  "properties": {}
+  "event_timestamp": "{{timestamp_plus_2h}}",
+  "properties": {},
+  "user_traits": {}
 }
 
 
-###
-POST http://127.0.0.1:8000/events
+
+### =========================================================================
+### SCENARIO 3: Insufficient Funds (once_per_calendar_day suppression)
+### =========================================================================
+
+# 3a. First Failure (Should ALLOW)
+POST {{baseUrl}}/events
 Content-Type: application/json
 
 {
-  "user_id": "u_rule_3",
+  "user_id": "{{user_funds}}",
   "event_type": "payment_failed",
-  "event_timestamp": "2025-01-03T12:00:00Z",
+  "event_timestamp": "2025-10-31T15:00:00Z",
   "properties": {
-    "failure_reason": "INSUFFICIENT_FUNDS",
-    "attempt_number": 1
-  }
+    "failure_reason": "INSUFFICIENT_FUNDS"
+  },
+  "user_traits": {}
 }
 
-
 ###
-POST http://127.0.0.1:8000/events
+
+# 3b. Second Failure same day (Should SUPPRESS - Mode: once_per_calendar_day)
+POST {{baseUrl}}/events
 Content-Type: application/json
 
 {
-  "user_id": "u_rule_4",
+  "user_id": "{{user_funds}}",
   "event_type": "payment_failed",
-  "event_timestamp": "2025-01-04T15:00:00Z",
+  "event_timestamp": "2025-10-31T18:00:00Z",
   "properties": {
-    "failure_reason": "INSUFFICIENT_FUNDS",
-    "attempt_number": 3
-  }
+    "failure_reason": "INSUFFICIENT_FUNDS"
+  },
+  "user_traits": {}
+}
+
+###
+
+# 3c. Failure next calendar day (Should ALLOW - New day in UTC)
+POST {{baseUrl}}/events
+Content-Type: application/json
+
+{
+  "user_id": "{{user_funds}}",
+  "event_type": "payment_failed",
+  "event_timestamp": "{{timestamp_next_day}}",
+  "properties": {
+    "failure_reason": "INSUFFICIENT_FUNDS"
+  },
+  "user_traits": {}
 }
 
 
+### =========================================================================
+### SCENARIO 4: High Risk Alert (Internal, Bypass Suppression)
+### =========================================================================
 
+# 4a. Third Attempt Failure (Should ALLOW - Action: Alert, Channel: Internal)
+POST {{baseUrl}}/events
+Content-Type: application/json
+
+{
+  "user_id": "{{user_risk}}",
+  "event_type": "payment_failed",
+  "event_timestamp": "{{timestamp_now}}",
+  "properties": {
+    "attempt_number": 3,
+    "failure_reason": "OTHER_ERROR"
+  },
+  "user_traits": {}
+}
+
+
+### =========================================================================
+### SCENARIO 5: Audit & Edge Cases
+### =========================================================================
+
+# 5a. Audit User 003 (Verify history of allowed vs suppressed messages)
+GET {{baseUrl}}/audit/{{user_funds}}
+
+###
+
+# 5b. No Rule Mismatch (Should return outcome: "none")
+POST {{baseUrl}}/events
+Content-Type: application/json
+
+{
+  "user_id": "user_none",
+  "event_type": "random_ui_click",
+  "event_timestamp": "{{timestamp_now}}",
+  "properties": {},
+  "user_traits": {}
+}
