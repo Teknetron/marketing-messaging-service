@@ -9,6 +9,7 @@ A backend service that processes behavioral events and triggers rule-based marke
 - [How to Run 🚀](#how-to-run-)
   - [Environment Setup](#environment-setup)
   - [Launch Service](#launch-service)
+- [Assumptions 📄](#-assumptions)
 - [API Documentation 📖](#api-documentation-)
 - [Example API Usage 📡](#example-api-usage-)
   - [POST Event - Payment Failed Example 💳](#post-event---payment-failed-example-)
@@ -64,6 +65,120 @@ python main.py
 The service will start on `http://127.0.0.1:8000` with automatic reload enabled for development.
 
 **Note**: When messages are triggered, they will be written to `messages.txt` in the root directory as a stub implementation of the messaging provider.
+
+##  📄 Assumptions
+
+### 🧱 Events & Traits Stored as Explicit Columns (Not JSON)
+
+Event properties and user traits are saved as **explicit SQL columns**,
+not JSON blobs.\
+This enables direct querying, indexing, and predictable rule evaluation.
+
+------------------------------------------------------------------------
+
+### 📜 `rules.yaml` as the Single Source of Truth
+
+All messaging logic, triggers, conditions, and suppression modes are
+defined in **`rules.yaml`**.\
+The code does **not** embed business logic.
+
+------------------------------------------------------------------------
+
+### 🎯 First-Matching-Rule Wins
+
+Rule evaluation is **top-down**.\
+The **first** rule that matches the event and its traits becomes the
+active decision.\
+Ordering in the YAML file matters.
+
+------------------------------------------------------------------------
+
+### 🔍 Audit Is for Explainability (Not Analytics)
+
+Audit logs are designed for:\
+- debugging\
+- transparency\
+- explaining why a user did or didn't get a message
+
+Audit is **not** intended for analytics, reporting, or modeling.
+
+------------------------------------------------------------------------
+
+### 🕒 Event Timeline Uses Server-Side `created_at`
+
+The meaningful processing timeline is based on the **server-side**
+timestamp (`created_at`) written by the database, not the timestamp
+provided by the event producer.
+
+------------------------------------------------------------------------
+
+### 🚫 Suppression Modes Are Limited
+
+Only two suppression modes exist:
+
+-   **`once_ever`** → Send only once in the user's lifetime\
+-   **`once_per_calendar_day`** → Send at most once per UTC calendar day
+
+No other frequency or throttling rules are considered.
+
+------------------------------------------------------------------------
+
+### 📆 Calendar-Day Logic Uses Event Timestamp
+
+"Calendar day" calculations for suppression use the **event's own
+timestamp**, not the server's `created_at` or the request arrival time.
+
+------------------------------------------------------------------------
+
+### 🔁 Prior-Event Checks Use Only the Most Recent Event
+
+When evaluating conditions like "within 24 hours after signup," the
+system checks **only the latest matching prior event**, not the full
+event history.
+
+------------------------------------------------------------------------
+
+### 📦 Only Some Event Types Are Expected
+
+The system assumes only the known event types from the assignment will
+ever arrive (e.g., `signup_completed`, `payment_failed`, etc.).\
+Unexpected event types are not part of rule evaluation.
+
+------------------------------------------------------------------------
+
+### 🧊 `rules.yaml` Is Static (Updated Only via Deployment)
+
+Rules are treated as **static configuration**.\
+Changes require redeployment or a service restart; there is no dynamic
+or runtime rule reloading.
+
+------------------------------------------------------------------------
+
+### 📥 Properties Payload Is Trusted & Stored Raw
+
+The `properties` dictionary from inbound events is:
+
+-   accepted without deep validation,\
+-   stored as-is,\
+-   used directly for rule evaluation.
+
+The service assumes the producer sends clean, well-formed data.
+
+------------------------------------------------------------------------
+
+### ➡️ Suppression & Sending Are Sequential (Not Atomic)
+
+Suppression checks and message sending follow a **read → decide →
+write** sequence.\
+This process is **not atomic**, meaning:
+
+-   two parallel requests might both pass suppression\
+-   send logs and decisions can race\
+-   DB inserts are not locked together
+
+Atomic consistency is out of scope for the initial MVP.
+
+
 
 ## API Documentation 📖
 
@@ -239,84 +354,6 @@ graph TB
 - **Actors**: Growth and CX teams consuming audit trails for analysis
 
 ---
-
-## ADR - first steps
-
-This was the first iteration of architectural decision records for the project.
-
-```mermaid
-graph TB
-    subgraph External [" "]
-        analytics[🔌 Analytics Platform]
-        team[👥 Internal Team]
-        iterable[📧 Iterable/Braze]
-    end
-    
-    subgraph Controller_Layer [🌐 Controller Layer]
-        ec[📥 EventController]
-        ac[📊 AuditController]
-    end
-    
-    subgraph Service_Layer [🔧 Service Layer]
-        eps[⚙️ EventProcessingService]
-        res[🎯 RuleEvaluationService]
-        ds[🚫 DeduplicationService]
-        aus[📋 AuditService]
-    end
-    
-    subgraph Repository_Layer [💾 Repository Layer]
-        er[📝 EventRepository]
-        srr[📤 SendRequestRepository]
-    end
-    
-    subgraph Infrastructure_Layer [🏗️ Infrastructure Layer]
-        db[(💾 SQLite)]
-        yaml[📋 RulesConfig YAML]
-        stub[📧 IterableStub]
-    end
-    
-    subgraph Domain_Models [📋 Domain Models]
-        models[📝 Event, Rule, SendRequest]
-    end
-    
-    %% Clean vertical flow
-    analytics --> ec
-    team --> ac
-    
-    ec --> eps
-    ac --> aus
-    
-    eps --> res
-    res --> ds
-    ds --> srr
-    
-    eps --> er
-    aus --> er
-    aus --> srr
-    
-    er --> db
-    srr --> db
-    res --> yaml
-    stub --> iterable
-    
-    %% Minimal cross-connections
-    res --> stub
-    stub --> srr
-
-    classDef external fill:#e1f5fe,stroke:#01579b,stroke-width:2px
-    classDef controller fill:#fff3e0,stroke:#e65100,stroke-width:2px
-    classDef service fill:#e8f5e8,stroke:#1b5e20,stroke-width:2px
-    classDef repository fill:#fce4ec,stroke:#ad1457,stroke-width:2px
-    classDef infrastructure fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
-    classDef model fill:#fff8e1,stroke:#f57f17,stroke-width:2px
-
-    class analytics,team,iterable external
-    class ec,ac controller
-    class eps,res,ds,aus service
-    class er,srr repository
-    class db,yaml,stub infrastructure
-    class models model
-```
 
 ## C4 Level 2: Container Diagram 📦
 
