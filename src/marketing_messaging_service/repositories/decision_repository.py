@@ -2,7 +2,8 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from src.marketing_messaging_service.models.decision import Decision
-from src.marketing_messaging_service.repositories.interfaces import IDecisionRepository
+from src.marketing_messaging_service.repositories.interfaces import \
+    IDecisionRepository
 
 
 class DecisionRepository(IDecisionRepository):

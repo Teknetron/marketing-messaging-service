@@ -1,11 +1,9 @@
 from typing import Any
 
-from src.marketing_messaging_service.services.enums import (
-    ActionType,
-    DeliveryMethod,
-    Operator,
-    SuppressionMode,
-)
+from src.marketing_messaging_service.services.enums import (ActionType,
+                                                            DeliveryMethod,
+                                                            Operator,
+                                                            SuppressionMode)
 
 _ALLOWED_FIELD_PREFIXES = ("properties.", "user_traits.")
 

@@ -1,11 +1,12 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
-from src.marketing_messaging_service.infrastructure.database import create_session
-from src.marketing_messaging_service.repositories.decision_repository import DecisionRepository
+from src.marketing_messaging_service.infrastructure.database import \
+    create_session
+from src.marketing_messaging_service.repositories.decision_repository import \
+    DecisionRepository
 from src.marketing_messaging_service.schemas.audit import AuditLog
 from src.marketing_messaging_service.services.audit_service import AuditService
-
 
 router = APIRouter(prefix="/audit", tags=["audit"])
 

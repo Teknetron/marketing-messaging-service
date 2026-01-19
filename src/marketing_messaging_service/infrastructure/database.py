@@ -7,7 +7,6 @@ from typing import Iterator
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, declarative_base, sessionmaker
 
-
 Base = declarative_base()
 
 

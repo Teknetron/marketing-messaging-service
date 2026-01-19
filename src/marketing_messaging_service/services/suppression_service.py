@@ -2,9 +2,7 @@ from sqlalchemy.orm import Session
 
 from src.marketing_messaging_service.models import Event
 from src.marketing_messaging_service.repositories.interfaces import (
-    ISendRequestRepository,
-    ISuppressionRepository,
-)
+    ISendRequestRepository, ISuppressionRepository)
 from src.marketing_messaging_service.services.rule_models import RuleDecision
 
 

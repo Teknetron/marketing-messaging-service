@@ -4,12 +4,16 @@ from src.marketing_messaging_service.models import SendRequest, Suppression
 from src.marketing_messaging_service.models.decision import Decision
 from src.marketing_messaging_service.models.event import Event
 from src.marketing_messaging_service.models.user_traits import UserTraits
-from src.marketing_messaging_service.providers.interfaces import IMessagingProvider
-from src.marketing_messaging_service.repositories.interfaces import IEventRepository, ISendRequestRepository, \
-    ISuppressionRepository, IDecisionRepository
+from src.marketing_messaging_service.providers.interfaces import \
+    IMessagingProvider
+from src.marketing_messaging_service.repositories.interfaces import (
+    IDecisionRepository, IEventRepository, ISendRequestRepository,
+    ISuppressionRepository)
 from src.marketing_messaging_service.schemas.event import EventIn
-from src.marketing_messaging_service.services.rule_evaluation_service import RuleEvaluationService
-from src.marketing_messaging_service.services.suppression_service import SuppressionService
+from src.marketing_messaging_service.services.rule_evaluation_service import \
+    RuleEvaluationService
+from src.marketing_messaging_service.services.suppression_service import \
+    SuppressionService
 
 
 class EventProcessingService:

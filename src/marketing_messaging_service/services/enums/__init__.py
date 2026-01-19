@@ -1,8 +1,4 @@
-from .rule_enums import (
-
-    ActionType, DeliveryMethod, Operator, SuppressionMode)
-
-
+from .rule_enums import ActionType, DeliveryMethod, Operator, SuppressionMode
 
 __all__ = [
     "ActionType",

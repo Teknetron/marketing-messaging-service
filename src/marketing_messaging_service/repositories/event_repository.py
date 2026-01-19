@@ -1,10 +1,12 @@
 from datetime import datetime
 
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from src.marketing_messaging_service.models.event import Event
-from src.marketing_messaging_service.repositories.interfaces import IEventRepository
-from sqlalchemy import select
+from src.marketing_messaging_service.repositories.interfaces import \
+    IEventRepository
+
 
 class EventRepository(IEventRepository):
     def add(self, db: Session, event: Event) -> Event:

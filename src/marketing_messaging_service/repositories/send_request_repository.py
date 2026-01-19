@@ -1,10 +1,11 @@
-from sqlalchemy.orm import Session
+from datetime import datetime
+
 from sqlalchemy import func, select
+from sqlalchemy.orm import Session
 
 from src.marketing_messaging_service.models.send_request import SendRequest
-from src.marketing_messaging_service.repositories.interfaces import ISendRequestRepository
-
-from datetime import datetime
+from src.marketing_messaging_service.repositories.interfaces import \
+    ISendRequestRepository
 
 
 class SendRequestRepository(ISendRequestRepository):
