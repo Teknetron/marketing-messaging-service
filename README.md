@@ -41,7 +41,7 @@ A backend service that processes behavioral events and triggers rule-based marke
 
 ## How to Run 🚀
 
-### Environment Setup
+### Environment Setup - Bare Metal
 
 1. **Install dependencies**:
    ```bash
@@ -55,6 +55,22 @@ A backend service that processes behavioral events and triggers rule-based marke
    API_PORT=8000
    DATABASE_URL=sqlite:///./messaging.db  # Default path
    ```
+
+3. **Activate poetry environment**:
+   ```bash
+   poetry env activate
+   ```
+   For older versions of poetry
+    ```bash
+   poetry shell
+    ```
+   
+4. **Initialize the database with alembic**:
+    ```bash
+    alembic revision --autogenerate -m "init migrations"
+    alembic upgrade head
+    ```
+
 
 ### Launch Service
 
