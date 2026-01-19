@@ -7,12 +7,10 @@ from sqlalchemy.orm import Session
 
 from src.marketing_messaging_service.models.event import Event
 from src.marketing_messaging_service.models.user_traits import UserTraits
-from src.marketing_messaging_service.repositories.interfaces import \
-    IEventRepository
-from src.marketing_messaging_service.services.rule_models import (Rule,
-                                                                  RuleDecision)
-from src.marketing_messaging_service.services.rule_validation import \
-    validate_rules_config
+from src.marketing_messaging_service.repositories.interfaces import IEventRepository
+from src.marketing_messaging_service.services.rule_models import Rule
+from src.marketing_messaging_service.services.rule_models import RuleDecision
+from src.marketing_messaging_service.services.rule_validation import validate_rules_config
 
 
 class RuleEvaluationService:

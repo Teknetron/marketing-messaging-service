@@ -1,6 +1,7 @@
 from datetime import datetime
 
-from sqlalchemy import func, select
+from sqlalchemy import func
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from src.marketing_messaging_service.models.send_request import SendRequest

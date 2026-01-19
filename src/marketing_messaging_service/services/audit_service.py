@@ -1,9 +1,8 @@
 from sqlalchemy.orm import Session
 
-from src.marketing_messaging_service.repositories.decision_repository import \
-    DecisionRepository
-from src.marketing_messaging_service.schemas.audit import (AuditLog,
-                                                           AuditLogItem)
+from src.marketing_messaging_service.repositories.decision_repository import DecisionRepository
+from src.marketing_messaging_service.schemas.audit import AuditLog
+from src.marketing_messaging_service.schemas.audit import AuditLogItem
 
 
 class AuditService:

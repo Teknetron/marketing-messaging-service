@@ -30,8 +30,6 @@ class EventRepository(IEventRepository):
             .first()
         )
 
-
-
     def list_by_user(self, db: Session, user_id: str) -> list[Event]:
         stmt = (
             select(Event)
@@ -39,15 +37,6 @@ class EventRepository(IEventRepository):
             .order_by(Event.event_timestamp.desc())
         )
         return list(db.scalars(stmt).all())
-
-
-    def get_latest_by_user_and_type(self, db: Session, user_id: str, event_type: str) -> Event | None:
-        return (
-            db.query(Event)
-            .filter(Event.user_id == user_id, Event.event_type == event_type)
-            .order_by(Event.event_timestamp.desc())
-            .first()
-        )
 
     def exists_by_user_and_type_in_window(
         self,

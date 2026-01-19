@@ -1,11 +1,12 @@
 from typing import Any
 
-from src.marketing_messaging_service.services.enums import (ActionType,
-                                                            DeliveryMethod,
-                                                            Operator,
-                                                            SuppressionMode)
+from src.marketing_messaging_service.services.enums import ActionType
+from src.marketing_messaging_service.services.enums import DeliveryMethod
+from src.marketing_messaging_service.services.enums import Operator
+from src.marketing_messaging_service.services.enums import SuppressionMode
 
 _ALLOWED_FIELD_PREFIXES = ("properties.", "user_traits.")
+
 
 def validate_rules_config(data: Any) -> list[dict[str, Any]]:
     errors: list[str] = []
@@ -146,5 +147,6 @@ def _validate_action(action: dict[str, Any], rule_path: str, errors: list[str]) 
 
     if action_type == ActionType.ALERT.value and delivery_method != DeliveryMethod.INTERNAL.value:
         errors.append(
-            f"{rule_path}.action.delivery_method: must be '{DeliveryMethod.INTERNAL.value}' when action.type is '{ActionType.ALERT.value}'."
+            f"{rule_path}.action.delivery_method: must be '{DeliveryMethod.INTERNAL.value}' "
+            f"when action.type is '{ActionType.ALERT.value}'."
         )

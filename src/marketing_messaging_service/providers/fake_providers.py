@@ -1,5 +1,6 @@
 from pathlib import Path
-from typing import Dict, List
+from typing import Dict
+from typing import List
 
 from .interfaces import IMessagingProvider
 
@@ -16,9 +17,12 @@ class FakeMessagingProvider(IMessagingProvider):
     _TEMPLATE_TEXT: dict[str, str] = {
         "WELCOME_EMAIL": "Welcome aboard! We're so excited to have you with us.",
         "BANK_LINK_SUCCESS_EMAIL": "You've just linked your bank account? Then you're almost ready to pay your rent!",
-        "INSUFFICIENT_FUNDS_EMAIL": "It looks like your payment didn't go through due to a low balance. Just a quick top-up should do the trick!",
-        "HIGH_RISK_ALERT": "We've noticed a few unsuccessful payment attempts and want to make sure your account is secure.",
+        "INSUFFICIENT_FUNDS_EMAIL": "It looks like your payment didn't go through due to a low balance. "
+                                    "Just a quick top-up should do the trick!",
+        "HIGH_RISK_ALERT": "We've noticed a few unsuccessful payment attempts and want to "
+                           "make sure your account is secure.",
     }
+
     def __init__(self, log_file: str = "messages.txt"):
         self.sent_messages: List[Dict[str, str]] = []
         self.log_path = Path(log_file)

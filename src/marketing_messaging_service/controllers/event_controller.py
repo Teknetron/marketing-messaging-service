@@ -1,22 +1,18 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter
+from fastapi import Depends
 from sqlalchemy.orm import Session
 
-from src.marketing_messaging_service.infrastructure.database import \
-    create_session
-from src.marketing_messaging_service.providers.fake_providers import \
-    FakeMessagingProvider
-from src.marketing_messaging_service.repositories import (
-    EventRepository, SendRequestRepository, SuppressionRepository)
-from src.marketing_messaging_service.repositories.decision_repository import \
-    DecisionRepository
-from src.marketing_messaging_service.schemas.event import (
-    EventIn, EventProcessingResult)
-from src.marketing_messaging_service.services.event_processing_service import \
-    EventProcessingService
-from src.marketing_messaging_service.services.rule_evaluation_service import \
-    RuleEvaluationService
-from src.marketing_messaging_service.services.suppression_service import \
-    SuppressionService
+from src.marketing_messaging_service.infrastructure.database import create_session
+from src.marketing_messaging_service.providers.fake_providers import FakeMessagingProvider
+from src.marketing_messaging_service.repositories import EventRepository
+from src.marketing_messaging_service.repositories import SendRequestRepository
+from src.marketing_messaging_service.repositories import SuppressionRepository
+from src.marketing_messaging_service.repositories.decision_repository import DecisionRepository
+from src.marketing_messaging_service.schemas.event import EventIn
+from src.marketing_messaging_service.schemas.event import EventProcessingResult
+from src.marketing_messaging_service.services.event_processing_service import EventProcessingService
+from src.marketing_messaging_service.services.rule_evaluation_service import RuleEvaluationService
+from src.marketing_messaging_service.services.suppression_service import SuppressionService
 
 router = APIRouter(prefix="/events", tags=["events"])
 

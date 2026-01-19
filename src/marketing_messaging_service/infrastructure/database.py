@@ -1,11 +1,14 @@
 import os
 from contextlib import contextmanager
-from datetime import datetime, timezone
+from datetime import datetime
+from datetime import timezone
 from pathlib import Path
 from typing import Iterator
 
 from sqlalchemy import create_engine
-from sqlalchemy.orm import Session, declarative_base, sessionmaker
+from sqlalchemy.orm import Session
+from sqlalchemy.orm import declarative_base
+from sqlalchemy.orm import sessionmaker
 
 Base = declarative_base()
 
@@ -26,7 +29,6 @@ def _get_database_url() -> str:
         return f"sqlite:///{(repo_root / rel).resolve()}"
 
     return env_url
-
 
 
 DATABASE_URL = _get_database_url()

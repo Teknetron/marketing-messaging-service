@@ -1,4 +1,5 @@
-from abc import ABC, abstractmethod
+from abc import ABC
+from abc import abstractmethod
 from datetime import datetime
 
 from sqlalchemy.orm import Session
@@ -60,7 +61,10 @@ class ISendRequestRepository(ABC):
         template_name: str,
         provided_ts: datetime,
     ) -> bool:
-        """Returns True if a matching send request exists between the start of provided_ts's day (00:00) and provided_ts (inclusive)."""
+        """
+        Returns True if a matching send request exists
+        between the start of provided_ts's day (00:00) and provided_ts (inclusive).
+        """
         raise NotImplementedError
 
     def list_by_user(self, db: Session, user_id: str) -> list[SendRequest]:
