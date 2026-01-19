@@ -28,6 +28,7 @@ class EventProcessingService:
         self.suppression_repository = suppression_repository
         self.rule_evaluation_service = rule_evaluation_service
         self.suppression_service = suppression_service
+        self.decision_repository = decision_repository
         self.messaging_provider = messaging_provider
 
     def process_event(self, db: Session, payload: EventIn):
@@ -56,13 +57,15 @@ class EventProcessingService:
 
         outcome, suppression_reason = self.suppression_service.evaluate(
             db=db,
-            user_id=saved_event.user_id,
+            event=saved_event,
             decision=decision,
         )
 
         if outcome == "allow":
             send_request = SendRequest(
                 user_id=saved_event.user_id,
+                event_id=saved_event.id,
+                event_timestamp=saved_event.event_timestamp,
                 template_name=decision.template_name,
                 channel=decision.delivery_method,
                 reason=f"rule:{decision.matched_rule}",
@@ -79,6 +82,8 @@ class EventProcessingService:
         elif outcome == "alert":
             send_request = SendRequest(
                 user_id=saved_event.user_id,
+                event_id=saved_event.id,
+                event_timestamp=saved_event.event_timestamp,
                 template_name=decision.template_name,
                 channel="internal",
                 reason=f"rule:{decision.matched_rule}",

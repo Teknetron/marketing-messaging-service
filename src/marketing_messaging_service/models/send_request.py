@@ -20,6 +20,10 @@ class SendRequest(Base):
         nullable=True,
     )
 
+    # Timestamp of the event that led to this send decision.
+    # Nullable for backward compatibility / ad-hoc inserts in tests.
+    event_timestamp: Mapped[datetime | None] = mapped_column(DateTime, nullable=True, index=True)
+
     template_name: Mapped[str] = mapped_column(String(64), index=True, nullable=False)
     channel: Mapped[str] = mapped_column(String(32), nullable=False)
 

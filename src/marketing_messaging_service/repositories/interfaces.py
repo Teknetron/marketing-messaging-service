@@ -53,6 +53,16 @@ class ISendRequestRepository(ABC):
     ) -> bool:
         raise NotImplementedError
 
+    def exists_for_user_and_template_in_day_so_far(
+        self,
+        db: Session,
+        user_id: str,
+        template_name: str,
+        provided_ts: datetime,
+    ) -> bool:
+        """Returns True if a matching send request exists between the start of provided_ts's day (00:00) and provided_ts (inclusive)."""
+        raise NotImplementedError
+
     def list_by_user(self, db: Session, user_id: str) -> list[SendRequest]:
         raise NotImplementedError
 

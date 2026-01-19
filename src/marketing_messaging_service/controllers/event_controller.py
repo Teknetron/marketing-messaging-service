@@ -2,34 +2,18 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
 from src.marketing_messaging_service.infrastructure.database import create_session
-from src.marketing_messaging_service.repositories import EventRepository, SendRequestRepository, SuppressionRepository
+from src.marketing_messaging_service.providers.fake_providers import FakeMessagingProvider
+from src.marketing_messaging_service.repositories import (
+    EventRepository,
+    SendRequestRepository,
+    SuppressionRepository,
+)
+from src.marketing_messaging_service.repositories.decision_repository import DecisionRepository
 from src.marketing_messaging_service.schemas.event import EventIn, EventProcessingResult
 from src.marketing_messaging_service.services.event_processing_service import EventProcessingService
 from src.marketing_messaging_service.services.rule_evaluation_service import RuleEvaluationService
 from src.marketing_messaging_service.services.suppression_service import SuppressionService
 
-# Repositories (singletons within module)
-event_repository = EventRepository()
-send_request_repository = SendRequestRepository()
-suppression_repository = SuppressionRepository()
-
-# Services
-rule_evaluation_service = RuleEvaluationService(
-    event_repository=event_repository
-)
-
-suppression_service = SuppressionService(
-    send_request_repository=send_request_repository,
-    suppression_repository=suppression_repository,
-)
-
-event_processing_service = EventProcessingService(
-    event_repository=event_repository,
-    send_request_repository=send_request_repository,
-    suppression_repository=suppression_repository,
-    rule_evaluation_service=rule_evaluation_service,
-    suppression_service=suppression_service,
-)
 
 router = APIRouter(prefix="/events", tags=["events"])
 
@@ -37,6 +21,30 @@ router = APIRouter(prefix="/events", tags=["events"])
 def get_db():
     with create_session() as session:
         yield session
+
+
+event_repository = EventRepository()
+send_request_repository = SendRequestRepository()
+suppression_repository = SuppressionRepository()
+decision_repository = DecisionRepository()
+
+
+rule_evaluation_service = RuleEvaluationService(event_repository=event_repository)
+suppression_service = SuppressionService(
+    suppression_repository=suppression_repository,
+    send_request_repository=send_request_repository
+)
+messaging_provider = FakeMessagingProvider()
+
+event_processing_service = EventProcessingService(
+    event_repository=event_repository,
+    send_request_repository=send_request_repository,
+    suppression_repository=suppression_repository,
+    rule_evaluation_service=rule_evaluation_service,
+    suppression_service=suppression_service,
+    decision_repository=decision_repository,
+    messaging_provider=messaging_provider,
+)
 
 
 @router.post("/", response_model=EventProcessingResult)

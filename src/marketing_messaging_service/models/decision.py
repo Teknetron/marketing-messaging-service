@@ -1,6 +1,7 @@
 from datetime import datetime
+
+from sqlalchemy import DateTime, ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column
-from sqlalchemy import Integer, String, DateTime, ForeignKey
 
 from src.marketing_messaging_service.infrastructure.database import Base
 
@@ -11,9 +12,10 @@ class Decision(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
 
     user_id: Mapped[str] = mapped_column(String, index=True)
-    event_id: Mapped[int] = mapped_column(Integer, ForeignKey("events.id"))
+    event_id: Mapped[int] = mapped_column(Integer, ForeignKey("events.id"), index=True)
 
     event_type: Mapped[str] = mapped_column(String)
+
     matched_rule: Mapped[str | None] = mapped_column(String, nullable=True)
 
     action_type: Mapped[str] = mapped_column(String)   # send | alert | suppress | none

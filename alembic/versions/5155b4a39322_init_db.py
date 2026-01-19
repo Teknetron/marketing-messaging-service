@@ -1,8 +1,8 @@
-"""db init
+"""init db
 
-Revision ID: ffa3822ababf
+Revision ID: 5155b4a39322
 Revises: 
-Create Date: 2026-01-19 02:19:42.958930
+Create Date: 2026-01-19 11:53:15.813675
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = 'ffa3822ababf'
+revision: str = '5155b4a39322'
 down_revision: Union[str, Sequence[str], None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -47,11 +47,13 @@ def upgrade() -> None:
     sa.ForeignKeyConstraint(['event_id'], ['events.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
+    op.create_index(op.f('ix_decisions_event_id'), 'decisions', ['event_id'], unique=False)
     op.create_index(op.f('ix_decisions_user_id'), 'decisions', ['user_id'], unique=False)
     op.create_table('send_requests',
     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
     sa.Column('user_id', sa.String(length=64), nullable=False),
     sa.Column('event_id', sa.Integer(), nullable=True),
+    sa.Column('event_timestamp', sa.DateTime(), nullable=True),
     sa.Column('template_name', sa.String(length=64), nullable=False),
     sa.Column('channel', sa.String(length=32), nullable=False),
     sa.Column('reason', sa.Text(), nullable=False),
@@ -60,6 +62,7 @@ def upgrade() -> None:
     sa.PrimaryKeyConstraint('id')
     )
     op.create_index(op.f('ix_send_requests_event_id'), 'send_requests', ['event_id'], unique=False)
+    op.create_index(op.f('ix_send_requests_event_timestamp'), 'send_requests', ['event_timestamp'], unique=False)
     op.create_index(op.f('ix_send_requests_template_name'), 'send_requests', ['template_name'], unique=False)
     op.create_index(op.f('ix_send_requests_user_id'), 'send_requests', ['user_id'], unique=False)
     op.create_table('suppressions',
@@ -100,9 +103,11 @@ def downgrade() -> None:
     op.drop_table('suppressions')
     op.drop_index(op.f('ix_send_requests_user_id'), table_name='send_requests')
     op.drop_index(op.f('ix_send_requests_template_name'), table_name='send_requests')
+    op.drop_index(op.f('ix_send_requests_event_timestamp'), table_name='send_requests')
     op.drop_index(op.f('ix_send_requests_event_id'), table_name='send_requests')
     op.drop_table('send_requests')
     op.drop_index(op.f('ix_decisions_user_id'), table_name='decisions')
+    op.drop_index(op.f('ix_decisions_event_id'), table_name='decisions')
     op.drop_table('decisions')
     op.drop_index(op.f('ix_events_user_id'), table_name='events')
     op.drop_index(op.f('ix_events_event_type'), table_name='events')

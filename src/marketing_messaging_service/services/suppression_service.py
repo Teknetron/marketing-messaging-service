@@ -1,6 +1,6 @@
-from datetime import datetime, timezone
 from sqlalchemy.orm import Session
 
+from src.marketing_messaging_service.models import Event
 from src.marketing_messaging_service.repositories.interfaces import (
     ISendRequestRepository,
     ISuppressionRepository,
@@ -17,7 +17,7 @@ class SuppressionService:
         self.send_request_repository = send_request_repository
         self.suppression_repository = suppression_repository
 
-    def evaluate(self, db: Session, user_id: str, decision: RuleDecision):
+    def evaluate(self, db: Session, event: Event, decision: RuleDecision):
         """
         Returns:
         - ("allow", None)
@@ -25,7 +25,7 @@ class SuppressionService:
         - ("suppress", reason)
         - ("none", None)
         """
-
+        user_id = event.user_id
         if decision.action_type == "none":
             return "none", None
 
@@ -49,14 +49,16 @@ class SuppressionService:
             return "allow", None
 
         if mode == "once_per_calendar_day":
-            today = datetime.now(timezone.utc).date()
-            exists_today = self.send_request_repository.exists_for_user_and_template_on_date(
-                db=db,
-                user_id=user_id,
-                template_name=decision.template_name,
-                date=today,
+            exists_in_window = (
+                self.send_request_repository.exists_for_user_and_template_in_day_so_far(
+                    db=db,
+                    user_id=user_id,
+                    template_name=decision.template_name,
+                    provided_ts=event.event_timestamp,
+                )
             )
-            if exists_today:
+
+            if exists_in_window:
                 return "suppress", "once_per_calendar_day"
             return "allow", None
 
