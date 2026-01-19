@@ -5,8 +5,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from src.marketing_messaging_service.models.send_request import SendRequest
-from src.marketing_messaging_service.repositories.interfaces import \
-    ISendRequestRepository
+from src.marketing_messaging_service.repositories.interfaces import ISendRequestRepository
 
 
 class SendRequestRepository(ISendRequestRepository):

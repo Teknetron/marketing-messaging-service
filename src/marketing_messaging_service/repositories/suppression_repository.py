@@ -2,8 +2,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from src.marketing_messaging_service.models.suppression import Suppression
-from src.marketing_messaging_service.repositories.interfaces import \
-    ISuppressionRepository
+from src.marketing_messaging_service.repositories.interfaces import ISuppressionRepository
 
 
 class SuppressionRepository(ISuppressionRepository):

@@ -4,8 +4,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from src.marketing_messaging_service.models.event import Event
-from src.marketing_messaging_service.repositories.interfaces import \
-    IEventRepository
+from src.marketing_messaging_service.repositories.interfaces import IEventRepository
 
 
 class EventRepository(IEventRepository):
